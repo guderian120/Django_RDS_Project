@@ -1,252 +1,323 @@
+ndy
 
-## 🐳 Quick Start with Docker Compose
+# 📘 Django + RDS + AWS Deployment Guide
 
-1. [📦 Prerequisites](#-prerequisites)
-
-   * [Install Docker](#install-docker)
-   * [Install Docker Compose](#install-docker-compose)
-2. [🚀 Running the Application](#-running-the-application)
-
-   * [Clone the Repository](#clone-the-repository)
-   * [Navigate to Project Directory](#navigate-to-project-directory)
-   * [Build and Start Containers](#build-and-start-containers)
-   * [Access the Application](#access-the-application)
-   * [Container Status](#container-status)
-3. [🖼️ Docker Build Screenshot](#️docker-build-screenshot)
+This project demonstrates how to build and deploy a Django application backed by an RDS MySQL database using Docker for local development and a production-ready setup on AWS EC2 with GitHub Actions for CI/CD.
 
 ---
 
-## 🎨 Frontend Documentation
+## 📑 Table of Contents
 
-4. [📁 Frontend App Overview](#-frontend-app-overview)
-
-   * [Creating the Frontend App](#creating-the-frontend-app)
-   * [Directory Structure](#directory-structure)
-5. [🗂️ Static Files and Templates](#️static-files-and-templates)
-
-   * [JavaScript and Styles](#javascript-and-styles)
-   * [HTML Templates](#html-templates)
-6. [📊 Dashboard Features](#-dashboard-features)
-
-   * [Add New Customer](#add-new-customer)
-   * [Add New Order](#add-new-order)
-   * [Customer Orders Section](#customer-orders-section)
-   * [Real-Time Charts and Graphs](#real-time-charts-and-graphs)
-   * [Summary Cards](#summary-cards)
-   * [Dashboard Navigation](#dashboard-navigation)
-   * [Dashboard Screenshot](#dashboard-screenshot)
-7. [📄 View Orders Page](#-view-orders-page)
-
-   * [Filter and Sort Orders](#filter-and-sort-orders)
-   * [Top Customers](#top-customers)
-   * [Monthly Sales Report](#monthly-sales-report)
-   * [Unsold Products](#unsold-products)
-   * [Average Order by Location](#average-order-by-location)
-   * [Frequent Buyers](#frequent-buyers)
-   * [Orders Page Screenshot](#orders-page-screenshot)
-
-
-
-
-# 🚀 Django RDS Project
-
-Welcome to the **Django RDS Project** – a minimal but functional full-stack application with real-time dashboard features, a connected MySQL RDS backend, and Dockerized deployment. This README helps you get started immediately and provides in-depth frontend documentation.
+* [📦 Phase 1: Local Development with Docker Compose](#-phase-1-local-development-with-docker-compose)
+* [🧪 Phase 2: RDS Integration Testing (Without Docker)](#-phase-2-rds-integration-testing-without-docker)
+* [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation)
 
 ---
 
-## 🐳 Quick Start with Docker Compose
+## 📦 Phase 1: Local Development with Docker Compose
 
-### 📦 Prerequisites
+### 🐳 Docker Compose Structure
 
-Before running the application, make sure the following tools are installed:
-
-#### ✅ Docker
-
-* Follow the [Docker installation guide](https://docs.docker.com/get-docker/) for your OS.
-* After installation, verify Docker is working:
-
-  ```bash
-  docker --version
-  ```
-
-#### ✅ Docker Compose
-
-* Install Docker Compose (usually comes with Docker Desktop).
-* Confirm with:
-
-  ```bash
-  docker-compose --version
-  ```
-
----
-
-### 🚀 Running the Application
-
-#### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/Django_RDS_Project.git
+```
+.
+├── docker-compose.yml
+├── Dockerfile
+├── .env
+├── app/
+│   ├── manage.py
+│   ├── requirements.txt
+│   ├── your_project/
 ```
 
-#### 2. Navigate to Project Directory
+### 📄 docker-compose.yml
 
-```bash
-cd Django_RDS_Project
+```yaml
+version: '3.9'
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+
+  web:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DB_NAME=mydb
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_HOST=db
+
+volumes:
+  db_data:
 ```
 
-Ensure you're in the same directory as `docker-compose.yml`.
+### 📄 Dockerfile
 
-#### 3. Build and Start Containers
+```Dockerfile
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /code
+
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+
+COPY . .
+```
+
+### ▶️ Running the App Locally
 
 ```bash
 docker-compose up --build
 ```
 
-> 🕓 **Note:** The images are large, so allow some time for everything to build and initialize.
+---
 
-#### 4. Access the Application
+## 🧪 Phase 2: RDS Integration Testing (Without Docker)
 
-Once all services are up, visit:
+### 🧬 A. Update `settings.py`
 
+```python
+import os
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+    }
+}
 ```
-http://127.0.0.1
+
+### ⚙️ B. Create a `.env` File
+
+```env
+DB_NAME=mydb
+DB_USER=myuser
+DB_PASSWORD=mypassword
+DB_HOST=mydb.abcdefghijk.us-west-2.rds.amazonaws.com
+DB_PORT=3306
 ```
 
-#### 5. Check Docker Containers
+Then load it in `manage.py` or via `python-dotenv`.
 
-You can confirm the containers are running using:
+### 📦 C. Install MySQL Client
 
 ```bash
-docker ps
+pip install mysqlclient
+sudo apt-get install libmysqlclient-dev  # Linux
 ```
 
----
-
-### 🖼️ Docker Build Screenshot
-
-![docker-compose-up](path/to/docker-compose-screenshot.png)
-
----
-
-## 🎨 Frontend Documentation
-
-### 📁 Frontend App Overview
-
-We created a minimal frontend using Django templates and static files:
+### 🛠️ D. Run Migrations
 
 ```bash
-python manage.py startapp frontend
+python manage.py migrate
 ```
 
-#### 📂 Directory Structure
-
-```
-frontend/
-├── static/
-│   ├── js/
-│   └── styles/
-├── templates/
-│   └── frontend/
-│       ├── dashboard.html
-│       └── order_data.html
-├── urls.py
-└── views.py
-```
-
-This app mainly serves static assets and dashboard templates.
+You are now connected to your AWS RDS instance.
 
 ---
 
-### 🗂️ Static Files and Templates
+## 🚀 Phase 3: Deployment Documentation
 
-#### JavaScript and Styles
+This section provides a complete deployment guide for your Django + MySQL project to a live AWS environment using:
 
-All frontend interactivity and visuals are handled through JS/CSS inside the `static/` directory.
+* **Amazon EC2** (Ubuntu 22.04 LTS)
+* **Amazon RDS MySQL** (Managed DB)
+* **Gunicorn** (WSGI application server)
+* **Nginx** (reverse proxy)
+* **GitHub Actions** (CI/CD workflow)
 
-#### HTML Templates
+### 🗺️ 1. Infrastructure Overview
 
-* `dashboard.html` – Real-time interactive dashboard.
-* `order_data.html` – Tabular summary of orders and customers.
+| Component      | Technology             |
+| -------------- | ---------------------- |
+| **App Server** | EC2 (Ubuntu 22.04 LTS) |
+| **Database**   | RDS MySQL (Free Tier)  |
+| **Web Server** | Nginx                  |
+| **WSGI App**   | Gunicorn               |
+| **CI/CD**      | GitHub Actions         |
+
+### 🛠️ 2. AWS Setup
+
+#### 📌 A. RDS MySQL
+
+* Use same VPC and security group as EC2.
+* Allow port 3306.
+
+#### 📌 B. EC2 Instance
+
+* Allow SSH (22), HTTP (80), HTTPS (443).
+* SSH into instance:
+
+```bash
+ssh -i "your-key.pem" ubuntu@<EC2_IP>
+```
+
+### ⚙️ 3. Django Settings
+
+#### 🧬 A. `settings.py` Example
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+    }
+}
+```
+
+#### 🔥 B. Gunicorn Setup
+
+```bash
+pip install gunicorn
+```
+
+Create `/etc/systemd/system/gunicorn.service`:
+
+```ini
+[Unit]
+Description=gunicorn daemon
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/your-project
+Environment="PATH=/home/ubuntu/your-project/venv/bin"
+ExecStart=/home/ubuntu/your-project/venv/bin/gunicorn \
+          --workers 3 \
+          --bind unix:/home/ubuntu/your-project/gunicorn.sock \
+          your_project.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reexec
+sudo systemctl enable gunicorn
+sudo systemctl start gunicorn
+```
+
+### 🌐 4. Nginx Configuration
+
+```bash
+sudo apt install nginx
+```
+
+Create `/etc/nginx/sites-available/your-project`:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location /static/ {
+        root /home/ubuntu/your-project;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/home/ubuntu/your-project/gunicorn.sock;
+    }
+}
+```
+
+```bash
+sudo ln -s /etc/nginx/sites-available/your-project /etc/nginx/sites-enabled
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### 🤖 5. GitHub Actions CI/CD
+
+#### 🔐 A. Add Secrets
+
+In GitHub → Settings → Secrets:
+
+* `EC2_IP`, `EC2_USER`, `SSH_PRIVATE_KEY`
+* `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
+
+#### ⚙️ B. Workflow
+
+`.github/workflows/deploy.yml`
+
+```yaml
+name: Deploy Django to EC2 (No Docker)
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up SSH
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > key.pem
+        chmod 600 key.pem
+
+    - name: Deploy to EC2
+      run: |
+        ssh -i key.pem -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_IP }} << 'EOF'
+          cd /home/ubuntu/Django_RDS_Project
+          git pull origin master
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python manage.py migrate
+          sudo systemctl restart gunicorn
+        EOF
+```
+
+### ✅ 6. Post-Deployment Checks
+
+```bash
+sudo systemctl status gunicorn
+sudo tail -f /var/log/nginx/error.log
+curl http://localhost
+```
 
 ---
 
-### 📊 Dashboard Features
+## ✅ You're Done!
 
-Preview:
-![Dashboard](path/to/Dashboard.png)
+You now have a fully operational Django app:
 
-#### 1. Add New Customer
+* Locally via Docker
+* Connected to AWS RDS
+* Deployed on EC2 with GitHub CI/CD
 
-* Add customers directly to the RDS backend.
-* See new entries reflected instantly in UI.
-
-#### 2. Add New Order
-
-* Add new orders to customers in real time.
-
-#### 3. Customer Orders Section
-
-* Select a customer and view their transaction history.
-* Includes a **View Orders** button to fetch detailed history.
-
-#### 4. Real-Time Charts and Graphs
-
-* **Line Chart**: Tracks customer spending over time.
-* **Donut Chart**: Visualizes order distribution.
-* Fully interactive: Add data and watch charts update instantly.
-
-#### 5. Summary Cards
-
-Top section contains 4 responsive cards showing:
-
-* Total Customers
-* Total Orders
-* Total Revenue
-* Average Order Value
-
-#### 6. Dashboard Navigation
-
-Top-right corner provides navigation links:
-
-* Dashboard
-* View Orders
-
----
-
-### 📄 View Orders Page
-
-Preview:
-![View Orders](path/to/ViewOrders.png)
-
-#### 1. Filter and Sort Orders
-
-Sort based on:
-
-* Completed Orders
-* Pending Orders
-* Cancelled Orders
-
-#### 2. Top Customers
-
-View your top five customers by revenue.
-
-#### 3. Monthly Sales Report
-
-Track monthly completed orders and totals.
-
-#### 4. Unsold Products
-
-See products in your catalog that were **never sold**.
-
-> *(Note: Product table is placeholder for future expansion.)*
-
-#### 5. Average Order by Location
-
-Get geographic insights into customer spending.
-
-#### 6. Frequent Buyers
-
-Identify repeat customers based on order frequency.
-
+Happy hacking! 🎉
 
 
