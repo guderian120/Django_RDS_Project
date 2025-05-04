@@ -28,7 +28,7 @@ frontend_dir = os.path.join(BASE_DIR, 'frontend')
 SECRET_KEY = 'django-insecure-f8^kiz4vt6uh*j*d)5(yc3$s-hurs1j+^p6_9-2^7$yhwm@m3d'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
