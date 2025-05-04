@@ -12,13 +12,13 @@ This url creates routes for our api
 """
 
 urlpatterns = [
-    path("customers/", CustomerList.as_view(), name='customer-list'), # path to return all costumers in a json
-    path("analytics/", AnalyticsAPIView.as_view(), name='analytics-api'), # path to run complex sql queries and return 
-    path('add-customer/', AddCustomerView.as_view(), name='add-customer'), # path to add a customer
-    path('add-order/', AddOrderView.as_view(), name='add-order'),   # path to add an order ProductList
-    path('products/', ProductList.as_view(), name='products'),   # path to add an order 
-    path('seed_data', cmd.seed_data, name="seed_data"), #this url is used to populate our database
-    path('orders/<str:user_name>/', CustomerOrdersView.as_view(), name='customer_orders'), # path  to return order data of a particular user
+    path("customers/", CustomerList.as_view(), name='customer-list'), # This api endpoint ingest a get request, initiates a serializers to cleans and return all customer objects in the database
+    path("analytics/", AnalyticsAPIView.as_view(), name='analytics-api'), # This api endpoint ingest a get request, runs complex database queries and returns results like top costumers, overall sales
+    path('add-customer/', AddCustomerView.as_view(), name='add-customer'), # This Api endpoint ingest a post request containing information about a customer to be created, it then validates and creates it
+    path('add-order/', AddOrderView.as_view(), name='add-order'),   # This Api endpoint ingest a post request containing data on an incoming customer order
+    path('products/', ProductList.as_view(), name='products'),   # This Api endpoint ingest a get request and returns all available products in database
+    path('seed_data', cmd.seed_data, name="seed_data"), #This Api endpoint ingest a get request and populates database with predefined data
+    path('orders/<str:user_name>/', CustomerOrdersView.as_view(), name='customer_orders'), #This Api endpoint returns the order data of a specific customer
     # Documentation endpoints
     path('schema/', SpectacularAPIView.as_view(), name='schema'), #endpoint to download yaml schema
     path('schema/swagger-ui/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'), # endpont to access swagger docs ui

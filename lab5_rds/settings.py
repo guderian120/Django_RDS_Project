@@ -24,9 +24,9 @@ frontend_dir = os.path.join(BASE_DIR, 'frontend')
 SECRET_KEY = 'django-insecure-f8^kiz4vt6uh*j*d)5(yc3$s-hurs1j+^p6_9-2^7$yhwm@m3d'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['3.254.145.18 ']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -53,8 +53,12 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Simple Django API',
-    'DESCRIPTION': 'A Simple API that only allows data fetching',
+    'TITLE': 'API Documentations for My Lab5',
+    'DESCRIPTION': '''
+    This Documentation provides insights and critical information on my Api endpoints. If using 
+    the Swagger-ui, you have the option to  test endpoints that ingests get requests.
+    This project is Designed by Andy Amponsah
+    ''',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }

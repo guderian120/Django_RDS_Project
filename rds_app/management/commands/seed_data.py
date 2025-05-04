@@ -33,10 +33,10 @@ def seed_data(request):
         p4 = Product.objects.create(name='Oven', category=appliances, price=85.50, stock=10)
 
         # Create orders
-        o1 = Order.objects.create(customer=c1, status='C', total=1200 + (85.5 * 2), product=p1)  # Completed (Shipped)
-        o2 = Order.objects.create(customer=c2, status='P', total=800,product=p1)              # Pending
-        o3 = Order.objects.create(customer=c1, status='C', total=150 * 2, product=p1)          # Delivered
-        o4 = Order.objects.create(customer=c3, status='X', total=1200, product=p1)             # Cancelled
+        o1 = Order.objects.create(customer=c1, status='C', total=1200 + (85.5 * 2))  # Completed (Shipped)
+        o2 = Order.objects.create(customer=c2, status='P', total=800)              # Pending
+        o3 = Order.objects.create(customer=c1, status='C', total=150 * 2)          # Delivered
+        o4 = Order.objects.create(customer=c3, status='X', total=1200)             # Cancelled
 
         # Create order items
         OrderItem.objects.create(order=o1, product=p1, quantity=1, price=1200.00)
