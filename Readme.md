@@ -1,4 +1,3 @@
-ndy
 
 # 📘 Django + RDS + AWS Deployment Guide
 
