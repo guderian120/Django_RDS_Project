@@ -179,12 +179,22 @@ DB_PORT=3306
 
 Then load it in `manage.py` or via `python-dotenv`.
 
-### 📦 C. Install MySQL Client
+### 📦 C. Clone the Repo and Activate virtual environment
+
+
+* Clone the repo:
+
+```bash
+git clone https://github.com/guderian120/Django_RDS_Project
+cd Django_RDS_Project
+```
+* Activate virtual environment and Install requirements:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirments.txt
+
 #Linux users facing dependency issues with mysql-client install this dependency
 sudo apt-get update
 sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config libssl-dev
@@ -240,7 +250,8 @@ ssh -i "your-key.pem" ubuntu@<EC2_IP>
 ```
 * Clone the repo:
 ```bash
-
+git clone https://github.com/guderian120/Django_RDS_Project
+cd Django_RDS_Project
 ```
 ### ⚙️ 3. Django Settings
 
@@ -259,10 +270,17 @@ DATABASES = {
 }
 ```
 
-#### 🔥 B. Gunicorn Setup
+#### 🔥 B. Insttall Requirements
 
 ```bash
-pip install gunicorn
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirments.txt
+
+#Linux users facing dependency issues with mysql-client install this dependency
+sudo apt-get update
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config libssl-dev
+pip install -r requirements.txt #install libraries again
 ```
 
 Create `/etc/systemd/system/gunicorn.service`:
@@ -275,11 +293,11 @@ After=network.target
 [Service]
 User=ubuntu
 Group=www-data
-WorkingDirectory=/home/ubuntu/your-project
-Environment="PATH=/home/ubuntu/your-project/venv/bin"
-ExecStart=/home/ubuntu/your-project/venv/bin/gunicorn \
+WorkingDirectory=/home/ubuntu/Django_RDS_Project
+Environment="PATH=/home/ubuntu/Django_RDS_Project/venv/bin"
+ExecStart=/home/ubuntu/Django_RDS_Project/venv/bin/gunicorn \
           --workers 3 \
-          --bind unix:/home/ubuntu/your-project/gunicorn.sock \
+          --bind unix:/home/ubuntu/Django_RDS_Project/gunicorn.sock \
           your_project.wsgi:application
 
 [Install]
@@ -298,26 +316,26 @@ sudo systemctl start gunicorn
 sudo apt install nginx
 ```
 
-Create `/etc/nginx/sites-available/your-project`:
+Create `/etc/nginx/sites-available/Django_RDS_Project`:
 
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com;
+    server_name your-domain.com; # put your EC2 Public DNS or IP here
 
     location /static/ {
-        root /home/ubuntu/your-project;
+        root /home/ubuntu/Django_RDS_Project;
     }
 
     location / {
         include proxy_params;
-        proxy_pass http://unix:/home/ubuntu/your-project/gunicorn.sock;
+        proxy_pass http://unix:/home/ubuntu/Django_RDS_Project/gunicorn.sock;
     }
 }
 ```
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/your-project /etc/nginx/sites-enabled
+sudo ln -s /etc/nginx/sites-available/Django_RDS_Project /etc/nginx/sites-enabled
 sudo nginx -t
 sudo systemctl restart nginx
 ```
@@ -375,7 +393,7 @@ sudo systemctl status gunicorn
 sudo tail -f /var/log/nginx/error.log
 curl http://localhost
 ```
-
+You can visit the IP address of your EC2 in a browser and greet the maginificent Views
 ---
 
 ## ✅ You're Done!
