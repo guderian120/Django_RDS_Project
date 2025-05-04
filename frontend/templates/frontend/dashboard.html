@@ -1,0 +1,797 @@
+  <!-- This is our Dashboard, to visuailse Data from the RDS instance and Access the endpoint -->
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Analytics Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #6c5ce7;
+      --secondary-color: #a29bfe;
+      --accent-color: #fd79a8;
+      --dark-color: #2d3436;
+      --light-color: #f5f6fa;
+    }
+    
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .navbar {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      color: white !important;
+      font-size: 1.5rem;
+    }
+    
+    .nav-link {
+      color: rgba(255,255,255,0.85) !important;
+      transition: all 0.3s ease;
+    }
+    
+    .nav-link:hover {
+      color: white !important;
+      transform: translateY(-2px);
+    }
+    
+    .dashboard-header {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+      backdrop-filter: blur(10px);
+    }
+    
+    .stat-card {
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      transition: all 0.3s ease;
+      overflow: hidden;
+      background: white;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card .card-body {
+      padding: 1.5rem;
+    }
+    
+    .stat-card i {
+      font-size: 2.5rem;
+      opacity: 0.8;
+    }
+    
+    .card-primary {
+      border-left: 4px solid var(--primary-color);
+    }
+    
+    .card-success {
+      border-left: 4px solid #00b894;
+    }
+    
+    .card-warning {
+      border-left: 4px solid #fdcb6e;
+    }
+    
+    .card-danger {
+      border-left: 4px solid #e17055;
+    }
+    
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    
+    .form-section {
+      background: white;
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      margin-bottom: 2rem;
+    }
+    
+    .table-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    
+    .table {
+      margin-bottom: 0;
+    }
+    
+    .table thead th {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 8px;
+    }
+    
+    .btn-primary:hover {
+      background-color: #5649d6;
+      transform: translateY(-2px);
+    }
+    
+    .select2-container .select2-selection--single {
+      height: 38px !important;
+      border-radius: 8px !important;
+      border: 1px solid #ced4da !important;
+    }
+    
+    .floating-btn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--accent-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 5px 20px rgba(253, 121, 168, 0.4);
+      z-index: 1000;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .floating-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(253, 121, 168, 0.6);
+    }
+    
+    .status-badge {
+      padding: 0.35em 0.65em;
+      border-radius: 50rem;
+      font-size: 0.75em;
+      font-weight: 700;
+    }
+    
+    .badge-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    
+    .badge-completed {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    
+    .badge-cancelled {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">
+        <i class="fas fa-chart-line me-2"></i>Amalitech Lab Five RDS
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="#"><i class="fas fa-tachometer-alt me-1"></i> Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/order-table"><i class="fas fa-table me-1"></i> View Orders</a>
+          </li>
+          
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-4">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <h1 class="display-5 fw-bold mb-2">Customer Analytics Dashboard</h1>
+          <p class="lead text-muted">Gain insights into customer by querying data from RDS</p>
+        </div>
+        <div class="col-md-4 text-end">
+          <div class="input-group">
+            <select id="timeRange" class="form-select">
+              <option value="7">Last 7 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="90">Last Quarter</option>
+              <option value="365">Last Year</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+      <div class="col-md-3 mb-3">
+        <div class="card stat-card card-primary h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-uppercase text-muted mb-2">Total Customers</h6>
+                <h2 class="mb-0" id="totalCustomers">{{total_users}}</h2>
+              </div>
+              <div class="icon-shape bg-primary bg-opacity-10 text-primary rounded-circle">
+                <i class="fas fa-users"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card stat-card card-success h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-uppercase text-muted mb-2">Total Orders</h6>
+                <h2 class="mb-0" id="totalOrders">{{ total_orders }}</h2>
+              </div>
+              <div class="icon-shape bg-success bg-opacity-10 text-success rounded-circle">
+                <i class="fas fa-shopping-cart"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card stat-card card-warning h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-uppercase text-muted mb-2">Revenue</h6>
+                <h2 class="mb-0" id="totalRevenue">${{ total_revenue }}</h2>
+              </div>
+              <div class="icon-shape bg-warning bg-opacity-10 text-warning rounded-circle">
+                <i class="fas fa-dollar-sign"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="card stat-card card-danger h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 class="text-uppercase text-muted mb-2">Avg. Order Value</h6>
+                <h2 class="mb-0" id="avgOrderValue">${{ total_revenue }}</h2>
+              </div>
+              <div class="icon-shape bg-danger bg-opacity-10 text-danger rounded-circle">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+      <div class="col-lg-8 mb-4">
+        <div class="chart-container">
+          <h5 class="mb-3">Sales Overview</h5>
+          <div id="salesChart"></div>
+        </div>
+      </div>
+      <div class="col-lg-4 mb-4">
+        <div class="chart-container">
+          <h5 class="mb-3">Top Customers</h5>
+          <div id="topCustomersChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Orders Section -->
+    <div class="form-section">
+      <div class="row">
+        <div class="col-md-6">
+          <h4 class="mb-3"><i class="fas fa-user-tag me-2"></i>Customer Orders</h4>
+          <div class="input-group mb-3">
+            <select id="customerSelect" class="form-select">
+              <option value="">Select a customer...</option>
+            </select>
+            <button id="viewData" class="btn btn-primary">
+              <i class="fas fa-search me-1"></i> View Orders
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="input-group mb-3">
+            <input type="text" id="searchOrders" class="form-control" placeholder="Search orders...">
+            <button class="btn btn-outline-secondary" type="button">
+              <i class="fas fa-filter"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <div id="ordersTable" class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td colspan="6" class="text-center py-4">Select a customer to view orders</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Forms Section -->
+    <div class="row">
+      <div class="col-lg-6 mb-4">
+        <div class="form-section">
+          <h4><i class="fas fa-user-plus me-2"></i>Add New Customer</h4>
+          <form id="addCustomerForm" class="row g-3 mt-2">
+            {% csrf_token %}
+            <div class="col-md-6">
+              <label for="username" class="form-label">Username</label>
+              <input type="text" class="form-control" id="username" placeholder="Username" required />
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" placeholder="Email" required />
+            </div>
+            <div class="col-md-6">
+              <label for="password" class="form-label">Password</label>
+              <input type="password" class="form-control" id="password" placeholder="Password" required />
+            </div>
+            <div class="col-md-6">
+              <label for="phone" class="form-label">Phone</label>
+              <input type="text" class="form-control" id="phone" placeholder="Phone" />
+            </div>
+            <div class="col-12">
+              <label for="address" class="form-label">Address</label>
+              <input type="text" class="form-control" id="address" placeholder="Address" />
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Add Customer
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="col-lg-6 mb-4">
+        <div class="form-section">
+          <h4><i class="fas fa-cart-plus me-2"></i>Add New Order</h4>
+          <form id="addOrderForm" class="row g-3 mt-2">
+            <div class="col-md-6">
+              <label for="customerSelect2" class="form-label">Customer</label>
+              <select id="customerSelect2" class="form-select">
+                <option value="">Select customer...</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="orderTotal" class="form-label">Total Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control" id="orderTotal" placeholder="0.00" required />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="orderStatus" class="form-label">Status</label>
+              <select id="orderStatus" class="form-select">
+                <option value="P">Pending</option>
+                <option value="C">Completed</option>
+                <option value="X">Cancelled</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+                <label for="productSelect" class="form-label">Product</label>
+                <select id="productSelect" class="form-select">
+                  <option value="">Select product...</option>
+                </select>
+              </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i> Add Order
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <footer class="footer py-5">
+    <div class="container">
+         <div class="row">
+
+              <div class="col-lg-12 col-12">                                
+                <p class="copyright-text text-center">Designed by <a rel="nofollow" href="https://github.com/guderian120" >Andy Amponsah</a></p>
+            </div>
+              
+         </div>
+    </div>
+</footer>
+  <!-- JavaScript Libraries -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.35.0/dist/apexcharts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+  <script>
+    // Initialize tooltips
+    $(document).ready(function() {
+    Swal.fire({
+            icon: 'info',
+            title: 'welcome',
+            text: 'Welcome to my lab, make sure you add more users to experience the full functionality of this project'
+          });
+      $('[data-bs-toggle="tooltip"]').tooltip();
+      
+      // Set today's date as default for order date
+      const today = new Date().toISOString().split('T')[0];
+      $('#orderDate').val(today);
+      
+      // Load initial data
+      loadCustomers();
+      loadproducts();
+      loadDashboardStats();
+      initCharts();
+    });
+
+    // CSRF Token setup
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+          cookie = cookie.trim();
+          if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    $.ajaxSetup({
+      headers: { 'X-CSRFToken': csrftoken }
+    });
+
+    // Initialize Charts
+    function initCharts() {
+      // Sales Chart
+      const labels = {{ labels|safe }};
+    const usageData = {{ usage_data|safe }};
+      const salesChart = new ApexCharts(document.querySelector("#salesChart"), {
+        series: [{
+          name: "Sales",
+          data: usageData
+        }],
+        chart: {
+          height: 350,
+          type: 'area',
+          toolbar: {
+            show: true
+          }
+        },
+        colors: ['#6c5ce7'],
+        dataLabels: {
+          enabled: false
+        },
+        stroke: {
+          curve: 'smooth',
+          width: 2
+        },
+        xaxis: {
+          categories: labels
+        },
+        tooltip: {
+          y: {
+            formatter: function (val) {
+              return "$" + val + "k"
+            }
+          }
+        }
+      });
+      salesChart.render();
+
+      // Top Customers Chart
+      const topCustomersChart = new ApexCharts(document.querySelector("#topCustomersChart"), {
+        series: usageData,
+        chart: {
+          type: 'donut',
+          height: 350
+        },
+        
+        colors: ['#6c5ce7', '#a29bfe', '#fd79a8', '#00b894', '#fdcb6e'],
+        labels: labels,
+        responsive: [{
+          breakpoint: 480,
+          options: {
+            chart: {
+              width: 200
+            },
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }],
+        plotOptions: {
+          pie: {
+            donut: {
+              labels: {
+                show: true,
+                total: {
+                  show: true,
+                  label: 'Total Spent',
+                  formatter: function (w) {
+                    return '$' + w.globals.seriesTotals.reduce((a, b) => {
+                      return a + b
+                    }, 0) + 'k'
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+      topCustomersChart.render();
+    }
+
+    // Load Dashboard Stats
+    function loadDashboardStats() {
+      // Simulated API calls - replace with actual API endpoints
+      $.get("/api/dashboard-stats/", function(data) {
+        $('#totalCustomers').text(data.total_customers);
+        $('#totalOrders').text(data.total_orders);
+        $('#totalRevenue').text('$' + data.total_revenue.toLocaleString());
+        $('#avgOrderValue').text('$' + data.avg_order_value.toFixed(2));
+      });
+    }
+
+    // Load Customers
+    function loadCustomers() {
+      $.get("/api/customers/", function(data) {
+        const select = $("#customerSelect");
+        const select2 = $("#customerSelect2");
+        select.empty().append('<option value="">Select a customer...</option>');
+        select2.empty().append('<option value="">Select customer...</option>');
+        
+        data.forEach(customer => {
+          const option = new Option(customer.user.username + ' (' + customer.user.email + ')', customer.id);
+          const option2 = new Option(customer.user.username + ' (' + customer.user.email + ')', customer.id);
+          select.append(option);
+          select2.append(option2);
+        });
+      });
+    }
+    function loadproducts() {
+      $.get("/api/products/", function(data) {
+        const select = $("#productSelect");
+        select.empty().append('<option value="">Select a Product...</option>');
+        
+        data.forEach(product => {
+          const option = new Option(product.name + ' $' + product.price);
+          select.append(option);
+        });
+      });
+    }
+    
+    // Load Orders for a Customer
+    function loadOrders(customerId) {
+      $.get(`/api/orders/${customerId}/`, function(data) {
+        let tableContent = `
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Customer</th>
+                <th>Status</th>
+                <th>Total</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+        
+        data.forEach(order => {
+          let statusBadge = '';
+          if (order.status === 'P') {
+            statusBadge = '<span class="status-badge badge-pending">Pending</span>';
+          } else if (order.status === 'C') {
+            statusBadge = '<span class="status-badge badge-completed">Completed</span>';
+          } else {
+            statusBadge = '<span class="status-badge badge-cancelled">Cancelled</span>';
+          }
+          
+          tableContent += `
+            <tr>
+              <td>${order.id}</td>
+              <td>${customerId}</td>
+              <td>${statusBadge}</td>
+              <td>$${order.total}</td>
+              <td>${new Date(order.created_at).toLocaleDateString()}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary me-1">
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+        
+        tableContent += '</tbody></table>';
+        $('#ordersTable').html(tableContent);
+      });
+    }
+
+    // Add Customer Form Submission
+    $("#addCustomerForm").on("submit", function(e) {
+      e.preventDefault();
+      const payload = {
+        username: $("#username").val(),
+        email: $("#email").val(),
+        password: $("#password").val(),
+        phone: $("#phone").val(),
+        address: $("#address").val(),
+      };
+
+      $.ajax({
+        url: "/api/add-customer/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(payload),
+        success: function() {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Customer added successfully',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          loadCustomers();
+          loadDashboardStats();
+          $("#addCustomerForm")[0].reset();
+        },
+        error: function() {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Error adding customer'
+          });
+        }
+      });
+    });
+
+    // Add Order Form Submission
+    $("#addOrderForm").on("submit", function(e) {
+      e.preventDefault();
+      const payload = {
+        customer_id: $("#customerSelect2").val(),
+        total: $("#orderTotal").val(),
+        product: $("#productSelect").val(),
+        status: $("#orderStatus").val(),
+        date: $("#orderDate").val()
+      };
+
+      $.ajax({
+        url: "/api/add-order/",
+        method: "POST",
+        contentType: "application/json",
+        data: JSON.stringify(payload),
+        success: function() {
+          Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: 'Order added successfully',
+            timer: 2000,
+            showConfirmButton: false
+          });
+          const customerId = $("#customerSelect").val();
+          if (customerId) loadOrders(customerId);
+          loadDashboardStats();
+          $("#addOrderForm")[0].reset();
+          $('#orderDate').val(today);
+        },
+        error: function() {
+          Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Error adding order'
+          });
+        }
+      });
+    });
+
+    // View Orders Button Click
+    $("#viewData").on("click", function() {
+      const customerId = $("#customerSelect").val();
+      if (customerId) {
+        loadOrders(customerId);
+      } else {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Select a customer',
+          text: 'Please select a customer first'
+        });
+      }
+    });
+
+    // Time Range Selector Change
+    $("#timeRange").change(function() {
+      loadDashboardStats();
+      // Here you would typically reload charts with new time range
+    });
+
+    // Floating Button Actions
+    $(".floating-btn").click(function() {
+      Swal.fire({
+        title: 'Quick Actions',
+        html: `
+          <div class="text-start">
+            <button class="btn btn-outline-primary w-100 mb-2">
+              <i class="fas fa-plus me-2"></i> Add Customer
+            </button>
+            <button class="btn btn-outline-success w-100 mb-2">
+              <i class="fas fa-file-export me-2"></i> Export Data
+            </button>
+            <button class="btn btn-outline-info w-100 mb-2">
+              <i class="fas fa-sync-alt me-2"></i> Refresh
+            </button>
+          </div>
+        `,
+        showConfirmButton: false,
+        showCloseButton: true
+      });
+    });
+  </script>
+</body>
+</html>

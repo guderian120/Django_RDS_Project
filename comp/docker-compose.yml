@@ -1,0 +1,63 @@
+version: '3.9'
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_app
+    command: >
+      sh -c "python manage.py makemigrations && 
+      python manage.py migrate && 
+      gunicorn lab5_rds.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    expose:
+      - "8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql_db
+      DB_NAME: mydb
+      DB_USER: myuser
+      DB_PASSWORD: mypass
+    networks:
+      - backend
+
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypass
+      MYSQL_ROOT_PASSWORD: rootpass
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - django
+    networks:
+      - backend
+
+networks:
+  backend:
+
+volumes:
+  mysql_data:

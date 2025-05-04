@@ -1,0 +1,11 @@
+.venv/*
+.venv/
+virtualenv/
+venv/*
+venv/
+archive/*
+archive/
+*__pycache__*
+*migrations*
+db.sqlite3
+.env

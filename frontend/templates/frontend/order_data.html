@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Customer Orders & Analytics</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    .sortable th {
+      cursor: pointer;
+    }
+    .sortable th.sorted-asc::after {
+      content: " ↑";
+    }
+    .sortable th.sorted-desc::after {
+      content: " ↓";
+    }
+    .category-header {
+      background-color: #f8f9fa;
+      font-weight: bold;
+      cursor: pointer;
+      padding: 10px;
+      margin-top: 20px;
+      border: 1px solid #dee2e6;
+    }
+    .category-content {
+      display: none;
+      padding: 10px;
+      background-color: #f1f1f1;
+      border: 1px solid #dee2e6;
+    }
+    .category-header:hover {
+      background-color: #e2e6ea;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">Customer Analytics</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="/">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/order-table">View Orders</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <h1 class="mb-4">Customers and Orders</h1>
+
+    <!-- Filters -->
+    <div class="mb-3">
+      <label class="form-label">Filter Orders by Status:</label>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="pendingFilter" value="P">
+        <label class="form-check-label" for="pendingFilter">Pending</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="completedFilter" value="C">
+        <label class="form-check-label" for="completedFilter">Completed</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" id="cancelledFilter" value="X">
+        <label class="form-check-label" for="cancelledFilter">Cancelled</label>
+      </div>
+    </div>
+
+    <!-- Orders Table -->
+    <table class="table table-bordered sortable" id="ordersTable">
+      <thead>
+        <tr>
+          <th scope="col" id="sortCustomer" style="cursor: pointer;">Customer Name</th>
+          <th scope="col" id="sortStatus" style="cursor: pointer;">Order Status</th>
+          <th scope="col" id="sortAmount" style="cursor: pointer;">Total Amount ⬍</th>
+          <th scope="col" id="sortDate" style="cursor: pointer;">Created At ⬍</th>
+        </tr>
+      </thead>
+      <tbody id="ordersTableBody">
+        <!-- Dynamic data -->
+      </tbody>
+    </table>
+
+    <!-- Analytics Table -->
+    <div class="category-header" id="topCustomersHeader">Top Customers by Spending</div>
+    <div class="category-content" id="topCustomersTable">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Customer Name</th>
+            <th>Total Spent</th>
+          </tr>
+        </thead>
+        <tbody id="topCustomersBody">
+          <!-- Dynamic data -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="category-header" id="monthlySalesHeader">Monthly Sales Report (Shipped/Delivered)</div>
+    <div class="category-content" id="monthlySalesTable">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Year</th>
+            <th>Total Sales</th>
+          </tr>
+        </thead>
+        <tbody id="monthlySalesBody">
+          <!-- Dynamic data -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="category-header" id="unorderedProductsHeader">Products Never Ordered</div>
+    <div class="category-content" id="unorderedProductsTable">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Product ID</th>
+          </tr>
+        </thead>
+        <tbody id="unorderedProductsBody">
+          <!-- Dynamic data -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="category-header" id="avgOrderByCountryHeader">Average Order Value by Country</div>
+    <div class="category-content" id="avgOrderByCountryTable">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Country</th>
+            <th>Average Order Value</th>
+          </tr>
+        </thead>
+        <tbody id="avgOrderByCountryBody">
+          <!-- Dynamic data -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="category-header" id="frequentBuyersHeader">Frequent Buyers (More Than One Order)</div>
+    <div class="category-content" id="frequentBuyersTable">
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Order Count</th>
+          </tr>
+        </thead>
+        <tbody id="frequentBuyersBody">
+          <!-- Dynamic data -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+  <footer class="footer py-5">
+  <div class="container">
+       <div class="row">
+
+            <div class="col-lg-12 col-12">                                
+              <p class="copyright-text text-center">Designed by <a rel="nofollow" href="https://github.com/guderian120" >Andy Amponsah</a></p>
+          </div>
+            
+       </div>
+  </div>
+</footer>
+  <script>
+    let currentSort = {
+      column: null,
+      ascending: true
+    };
+
+    // Fetch and render customers with orders
+    function fetchCustomerOrders() {
+      $.get("/api/customers/", function(data) {
+        const tableBody = $("#ordersTableBody");
+        tableBody.empty();
+
+        data.forEach(customer => {
+          if (customer.orders) {
+            customer.orders.forEach(order => {
+              const row = `
+                <tr class="order-row" data-status="${order.status}">
+                  <td>${customer.user.username}</td>
+                  <td>${order.status === 'P' ? 'Pending' : order.status === 'C' ? 'Completed' : 'Cancelled'}</td>
+                  <td>${order.total}</td>
+                  <td>${order.created_at}</td>
+                </tr>
+              `;
+              tableBody.append(row);
+            });
+          }
+        });
+
+        filterOrders();  // Apply any filters after rendering
+      });
+    }
+
+    // Fetch and render analytics data
+    function fetchAnalyticsData() {
+      $.get("/api/analytics/", function(data) {
+        // Top Customers by Spending
+        console.log(data)
+        const topCustomersBody = $("#topCustomersBody");
+        topCustomersBody.empty();
+        data.top_customers_by_spending.forEach(item => {
+          topCustomersBody.append(`
+            <tr>
+              <td>${item.customer_name}</td>
+              <td>${item.total_spent}</td>
+            </tr>
+          `);
+        });
+
+        // Monthly Sales Report
+        const monthlySalesBody = $("#monthlySalesBody");
+        monthlySalesBody.empty();
+        data.monthly_sales_report.forEach(item => {
+          monthlySalesBody.append(`
+            <tr>
+              <td>${item.month}</td>
+              <td>${item.year}</td>
+              <td>${item.total_sales}</td>
+            </tr>
+          `);
+        });
+
+        // Products Never Ordered
+        const unorderedProductsBody = $("#unorderedProductsBody");
+        unorderedProductsBody.empty();
+        data.products_never_ordered.forEach(item => {
+          unorderedProductsBody.append(`
+            <tr>
+              <td>${item.name}</td>
+              <td>${item.id}</td>
+            </tr>
+          `);
+        });
+
+        // Average Order Value by Country
+        const avgOrderByCountryBody = $("#avgOrderByCountryBody");
+        avgOrderByCountryBody.empty();
+        data.average_order_value_by_country.forEach(item => {
+          avgOrderByCountryBody.append(`
+            <tr>
+              <td>${item.country}</td>
+              <td>${item.avg_order}</td>
+            </tr>
+          `);
+        });
+
+        // Frequent Buyers
+        const frequentBuyersBody = $("#frequentBuyersBody");
+        
+        frequentBuyersBody.empty();
+        data.frequent_buyers.forEach(item => {
+          frequentBuyersBody.append(`
+            <tr>
+              <td>${item.user__username}</td>
+              <td>${item.order_count}</td>
+            </tr>
+          `);
+        });
+      });
+    }
+
+    // Filter based on order status
+    function filterOrders() {
+      const selectedStatuses = [];
+      if ($('#pendingFilter').prop('checked')) selectedStatuses.push('P');
+      if ($('#completedFilter').prop('checked')) selectedStatuses.push('C');
+      if ($('#cancelledFilter').prop('checked')) selectedStatuses.push('X');
+
+      $('.order-row').each(function() {
+        const rowStatus = $(this).data('status');
+        if (selectedStatuses.length === 0 || selectedStatuses.includes(rowStatus)) {
+          $(this).show();
+        } else {
+          $(this).hide();
+        }
+      });
+    }
+
+    // Sort table rows by column (amount or date)
+    function sortTableBy(column) {
+      const rows = Array.from(document.querySelectorAll('#ordersTableBody tr'));
+
+      rows.sort((a, b) => {
+        const aValue = a.querySelector(`td:nth-child(${column})`).innerText;
+        const bValue = b.querySelector(`td:nth-child(${column})`).innerText;
+
+        if (column === 3) {
+          return currentSort.ascending
+            ? parseFloat(aValue) - parseFloat(bValue)
+            : parseFloat(bValue) - parseFloat(aValue);
+        } else if (column === 4) {
+          return currentSort.ascending
+            ? new Date(aValue) - new Date(bValue)
+            : new Date(bValue) - new Date(aValue);
+        } else {
+          return 0;
+        }
+      });
+
+      currentSort.ascending = !currentSort.ascending;
+
+      const tableBody = document.querySelector('#ordersTableBody');
+      rows.forEach(row => tableBody.appendChild(row));
+    }
+
+    // Toggle category section visibility
+    $('.category-header').click(function() {
+      const content = $(this).next('.category-content');
+      content.toggle();
+    });
+
+    $(document).ready(function() {
+      fetchCustomerOrders();
+      fetchAnalyticsData();
+
+      // Sorting
+      $('#sortAmount').click(() => sortTableBy(3));
+      $('#sortDate').click(() => sortTableBy(4));
+
+      // Apply filters
+      $('#pendingFilter, #completedFilter, #cancelledFilter').change(filterOrders);
+    });
+  </script>
+</body>
+</html>
