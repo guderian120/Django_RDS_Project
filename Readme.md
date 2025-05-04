@@ -9,8 +9,8 @@ This project demonstrates how to build and deploy a Django application backed by
 
 * [📦 Phase 1: Local Development with Docker Compose](#-phase-1-local-development-with-docker-compose)
 * [🧪 Phase 2: RDS Integration Testing (Without Docker)](#-phase-2-rds-integration-testing-without-docker)
-* [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation)
-
+* [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation) 
+* [🚀 Phase 4: API Documentation](#-phase-4-api-documentation) #
 ---
 
 ## 📦 Phase 1: Local Development with Docker Compose
@@ -146,43 +146,16 @@ CMD ["sh", "-c", "python manage.py migrate && exec gunicorn lab5_rds.wsgi:applic
 docker-compose up --build
 ```
 
+### ▶Demo on Docker-Compose
+![Dashboard](/media/frontend/dashboard.png)
+
 ---
 
 ## 🧪 Phase 2: RDS Integration Testing (Without Docker)
 
-### 🧬 A. Update `settings.py`
-
-```python
-import os
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-    }
-}
-```
-
-### ⚙️ B. Create a `.env` File
-
-```env
-DB_NAME=mydb
-DB_USER=myuser
-DB_PASSWORD=mypassword
-DB_HOST=mydb.abcdefghijk.us-west-2.rds.amazonaws.com
-DB_PORT=3306
-```
-
-Then load it in `manage.py` or via `python-dotenv`.
-
-### 📦 C. Clone the Repo and Activate virtual environment
+### 🧬 A. Clone the repo and Activate virtual environment 
 
 
-* Clone the repo:
 
 ```bash
 git clone https://github.com/guderian120/Django_RDS_Project
@@ -200,6 +173,38 @@ sudo apt-get update
 sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config libssl-dev
 pip install -r requirements.txt #install libraries again
 ```
+  Ensure you have already setup a publicly available Amazon RDS instance
+ 
+### ⚙️ B. Create a `.env` File
+
+```env
+DB_NAME=mydb
+DB_USER=myuser
+DB_PASSWORD=mypassword
+DB_HOST=mydb.abcdefghijk.us-west-2.rds.amazonaws.com
+DB_PORT=3306
+```
+
+Then load it in `manage.py` or via `python-dotenv`.
+
+### 📦 C. Update `settings.py`
+
+
+```python
+import os
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+    }
+}
+```
+
 
 ### 🛠️ D. Run Migrations
 
@@ -215,7 +220,7 @@ RDS you have to make it publicly availabe: comes with security risk
 
 ## 🚀 Phase 3: Deployment Documentation
 
-This section provides a complete deployment guide for your Django + MySQL project to a live AWS environment using:
+This section provides a complete deployment guide for the Django + MySQL project to a live AWS environment using:
 
 * **Amazon EC2** (Ubuntu 22.04 LTS)
 * **Amazon RDS MySQL** (Managed DB)
@@ -233,7 +238,9 @@ This section provides a complete deployment guide for your Django + MySQL projec
 | **WSGI App**   | Gunicorn               |
 | **CI/CD**      | GitHub Actions         |
 
-### 🛠️ 2. AWS Setup
+### 🛠️ 2. GITHUB ACTIONS DEMO
+![GITHUB ACTION](/media/compose/github_action_log.jpg)
+
 
 #### 📌 A. RDS MySQL
 
@@ -269,8 +276,17 @@ DATABASES = {
     }
 }
 ```
+### ⚙️ B. Create a `.env` File in the settings directory
 
-#### 🔥 B. Insttall Requirements
+```env
+DB_NAME=mydb
+DB_USER=myuser
+DB_PASSWORD=mypassword
+DB_HOST=mydb.abcdefghijk.us-west-2.rds.amazonaws.com
+DB_PORT=3306
+```
+
+#### 🔥 C. Insttall Requirements
 
 ```bash
 python3 -m venv venv
@@ -394,6 +410,113 @@ sudo tail -f /var/log/nginx/error.log
 curl http://localhost
 ```
 You can visit the IP address of your EC2 in a browser and greet the maginificent Views
+---
+
+
+
+
+## 📡 Phase 4:  API APPLICATION DOCUMENTATION
+
+This project uses **Django REST Framework** to power a RESTful API backend for managing customers, orders, and analytics. Authentication is not implemented (due to time constraints), but this can be extended in future iterations.
+
+---
+### 🧱 API Docs
+![api dasboard](/media/api_docs/api_docs.png)
+
+### 🧱 API App Structure
+
+```bash
+rds_app/
+├── admin.py               # Admin interface for models
+├── apps.py
+├── __init__.py
+│
+├── management/
+│   └── commands/
+│       ├── customers.py   # Populates DB with lab-provided data
+│       └── seed_data.py   # Another option for seeding sample data
+│
+├── serializers.py         # DRF serializers for data validation
+├── tests.py               # Unit tests for the app
+├── urls.py                # API route mappings
+└── views.py               # Main logic for handling requests
+```
+
+---
+
+### 🔗 API Endpoints
+
+> **Note:** All endpoints assume `localhost:8000` as the base URL during development.
+
+---
+
+#### 🔸 Core API Endpoints
+
+| Endpoint                       | Method | Description                                               |
+| ------------------------------ | ------ | --------------------------------------------------------- |
+| `/api/customers/`              | `GET`  | Retrieve a list of all customers                          |
+| `/api/analytics/`              | `GET`  | Returns analytics and advanced queries on customer orders |
+| `/api/add-customer/`           | `POST` | Add a new customer with request payload                   |
+| `/api/add-order/`              | `POST` | Add a new order for an existing customer                  |
+| `/api/orders/<str:user_name>/` | `GET`  | Retrieve all order history for a specific customer        |
+
+---
+
+#### 🔹 API Documentation Endpoints
+
+| Endpoint                  | Method | Description                                        |
+| ------------------------- | ------ | -------------------------------------------------- |
+| `/api/schema/`            | `GET`  | Downloads the OpenAPI schema in YAML               |
+| `/api/schema/swagger-ui/` | `GET`  | Browse and test API interactively using Swagger UI |
+| `/api/schema/redoc/`      | `GET`  | Browse structured API documentation using Redoc    |
+
+> ✅ Use **Swagger UI** or **Redoc** to test requests directly from your browser interface.
+
+---
+
+### 🧪 Example: Adding a Customer
+
+**POST** `/api/add-customer/`
+
+```json
+{
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "location": "Accra"
+}
+```
+
+---
+
+### 📊 Example: Viewing Customer Orders
+
+**GET** `/api/orders/john-doe/`
+
+Returns all orders for the user `john-doe` including price, status, and timestamp.
+
+---
+
+### 🔍 Example: Analytics Endpoint
+
+**GET** `/api/analytics/`
+
+Returns:
+
+* Most frequent buyers
+* Monthly revenue
+* Revenue by location
+* Product performance (e.g., unsold products)
+
+---
+
+> 📁 **Tip:** All seeding logic is located in `rds_app/management/commands/`. Use:
+
+```bash
+visit the endpoint localhost:8000/api/seed_data
+```
+
+to populate your database for testing and development.
+
 ---
 
 ## ✅ You're Done!

@@ -5,9 +5,10 @@ from django.db.models.functions import TruncMonth, TruncYear
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema, OpenApiExample
 from .models import *
 from .serializers import *
-
+import json
 
 
 class CustomerList(APIView):
@@ -23,14 +24,10 @@ class CustomerList(APIView):
         return Response(serializer.data)
 
 
-
-
-
 class CustomerOrdersView(APIView):
     """
     This view returns the order data of a particular customer whose username was 
     passed from the front end, so the url of this view accepts user_name as an argument 
-
     """
     def get(self, request, user_name): # handle get requests
         # Process received data to extract only username
@@ -106,10 +103,18 @@ class AddCustomerView(APIView):
     """
     This view is used to add Customers to our Database
     we will bypass any authentication requiremnt since our app doesnt have JWT configured
+    param1 -- username
+    param2 -- email
+    param3 -- password
+    param4 -- address
+    param5 -- phone
     """
     authentication_classes = [SessionAuthentication]
     permission_classes = [AllowAny]
 
+    
+    @extend_schema(request=CustomerSerializer, responses=CustomerSerializer)
+    
     #Handle all post  requests to create users
     def post(self, request):
         """
@@ -154,14 +159,42 @@ class AddProductView(APIView):
 class AddOrderView(APIView):
     """
     This is a view to add orders to a user or customer account
-    we will bypass authentications
+    we will bypass authentications. Ensure username is in double quotes
+    change the customer key to customer_id
+    status can only be "C" , "P" or "X"
+    sample valid request
+    {
+        "customer_id":"andy",
+        "status":"C",
+        "total": 100,
+    }
+   
     """
     authentication_classes = [SessionAuthentication]
     permission_classes = [AllowAny]
+   
+    @extend_schema(
+    request=OrderCreateSerializer,
+    responses=OrderCreateSerializer,
+    examples=[
+        OpenApiExample(
+            name="Create Order Example",
+            description="Example payload for creating an order",
+            value={
+                "customer_id": "random_swagger",
+                "status": "P",
+                "total": "27930740.0"
+            },
+            request_only=True,
+        )
+    ]
+)
     def post(self, request): # handle post requests
-        # try to create others but also stay alert for errors
         try:
-            username = request.data.get('customer_id').split(" ")[0] # manipulate incoming request to extract username
+            raw_body = request.body  
+            body_str = raw_body.decode('utf-8')  
+            data = json.loads(body_str)  #
+            username = request.data.get('customer_id').split(" ")[0] 
             if not username:
                 return Response({'detail': 'Username is required'}, status=status.HTTP_400_BAD_REQUEST) # if there is no username in request, return error
             
@@ -170,6 +203,6 @@ class AddOrderView(APIView):
                 serializer.save() # save to database
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e: # if any errors occurs through the process
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) # return an error
+            return Response({'Error':f'Error adding order: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST) # return an error
 
  

@@ -9,3 +9,5 @@ archive/
 db.sqlite3
 .env
 comp/
+app
+
