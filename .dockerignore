@@ -6,7 +6,6 @@ venv/
 archive/*
 archive/
 *__pycache__*
-*migrations*
 db.sqlite3
 .env
 comp/
