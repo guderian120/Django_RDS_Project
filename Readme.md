@@ -31,54 +31,105 @@ This project demonstrates how to build and deploy a Django application backed by
 ### 📄 docker-compose.yml
 
 ```yaml
-version: '3.9'
+vversion: '3.9'
+
 services:
-  db:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django_app
+    command: >
+      sh -c "python manage.py makemigrations && 
+      python manage.py migrate && 
+      gunicorn lab5_rds.wsgi:application --bind 0.0.0.0:8000"
+    volumes:
+      - .:/app
+    expose:
+      - "8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql_db
+      DB_NAME: mydb
+      DB_USER: myuser
+      DB_PASSWORD: mypass
+    networks:
+      - backend
+
+  mysql:
     image: mysql:8.0
+    container_name: mysql_db
     restart: always
     environment:
       MYSQL_DATABASE: mydb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: rootpassword
-    ports:
-      - "3306:3306"
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mypass
+      MYSQL_ROOT_PASSWORD: rootpass
     volumes:
-      - db_data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  web:
-    build: .
-    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
-    volumes:
-      - .:/code
+  nginx:
+    image: nginx:latest
+    container_name: nginx_proxy
     ports:
-      - "8000:8000"
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
-      - db
-    environment:
-      - DB_NAME=mydb
-      - DB_USER=user
-      - DB_PASSWORD=password
-      - DB_HOST=db
+      - django
+    networks:
+      - backend
+
+networks:
+  backend:
 
 volumes:
-  db_data:
+  mysql_data:
 ```
 
 ### 📄 Dockerfile
 
 ```Dockerfile
-FROM python:3.11-slim
+FROM python:3.12-slim
 
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
+# Environment variables (corrected format)
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-WORKDIR /code
+WORKDIR /app
 
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    python3-dev \
+    default-libmysqlclient-dev \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Upgrade pip tools
+RUN pip install --upgrade pip setuptools wheel
+
+# Install dependencies (using cache-efficient approach)
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN --mount=type=cache,target=/root/.cache/pip \
+    pip install --no-cache-dir -r requirements.txt
 
+# Copy application code
 COPY . .
+
+# Runtime command (with proper signal handling)
+CMD ["sh", "-c", "python manage.py migrate && exec gunicorn lab5_rds.wsgi:application --bind 0.0.0:8000"]
+
 ```
 
 ### ▶️ Running the App Locally
