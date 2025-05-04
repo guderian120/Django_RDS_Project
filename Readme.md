@@ -3,15 +3,13 @@
 
 This project demonstrates how to build and deploy a Django application backed by an RDS MySQL database using Docker for local development and a production-ready setup on AWS EC2 with GitHub Actions for CI/CD.
 
----
 
 ## 📑 Table of Contents
 
 * [📦 Phase 1: Local Development with Docker Compose](#-phase-1-local-development-with-docker-compose)
 * [🧪 Phase 2: RDS Integration Testing (Without Docker)](#-phase-2-rds-integration-testing-without-docker)
 * [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation) 
-* [🚀 Phase 4: API Documentation](#-phase-4-api-documentation) #
----
+* [📡 Phase 4:  API APPLICATION DOCUMENTATION](#-phase-4-api-documentation) 
 
 ## 📦 Phase 1: Local Development with Docker Compose
 
