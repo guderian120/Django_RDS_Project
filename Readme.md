@@ -15,6 +15,13 @@ This project demonstrates how to build and deploy a Django application backed by
 
 ## 📦 Phase 1: Local Development with Docker Compose
 
+
+* Clone the repo:
+
+```bash
+git clone https://github.com/guderian120/Django_RDS_Project
+cd Django_RDS_Project
+```
 ### 🐳 Docker Compose Structure
 
 ```
@@ -135,6 +142,7 @@ CMD ["sh", "-c", "python manage.py migrate && exec gunicorn lab5_rds.wsgi:applic
 ### ▶️ Running the App Locally
 
 ```bash
+#make sure you are in the Django_RDS_Project direcory
 docker-compose up --build
 ```
 
@@ -174,8 +182,13 @@ Then load it in `manage.py` or via `python-dotenv`.
 ### 📦 C. Install MySQL Client
 
 ```bash
-pip install mysqlclient
-sudo apt-get install libmysqlclient-dev  # Linux
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirments.txt
+#Linux users facing dependency issues with mysql-client install this dependency
+sudo apt-get update
+sudo apt-get install python3-dev default-libmysqlclient-dev build-essential pkg-config libssl-dev
+pip install -r requirements.txt #install libraries again
 ```
 
 ### 🛠️ D. Run Migrations
@@ -185,6 +198,8 @@ python manage.py migrate
 ```
 
 You are now connected to your AWS RDS instance.
+Note for this to be possible when setting up your 
+RDS you have to make it publicly availabe: comes with security risk
 
 ---
 
@@ -223,7 +238,10 @@ This section provides a complete deployment guide for your Django + MySQL projec
 ```bash
 ssh -i "your-key.pem" ubuntu@<EC2_IP>
 ```
+* Clone the repo:
+```bash
 
+```
 ### ⚙️ 3. Django Settings
 
 #### 🧬 A. `settings.py` Example
