@@ -11,6 +11,13 @@ This project demonstrates how to build and deploy a Django application backed by
 * [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation) 
 * [📡 Phase 4:  API APPLICATION DOCUMENTATION](#-phase-4-api-documentation) 
 
+
+
+
+### 🧱 API Docs
+![api dasboard](/media/frontend/frontend_video.gif)
+
+
 ## 📦 Phase 1: Local Development with Docker Compose
 
 
@@ -146,6 +153,9 @@ docker-compose up --build
 
 ### ▶Demo on Docker-Compose
 ![Dashboard](/media/frontend/dashboard.png)
+
+### Video on Docker-Compose
+![Dashboard](/media/compose/docker_compose_video.gif)
 
 ---
 
@@ -420,6 +430,11 @@ This project uses **Django REST Framework** to power a RESTful API backend for m
 ---
 ### 🧱 API Docs
 ![api dasboard](/media/api_docs/api_docs.png)
+
+
+### 🧱 API Docs Video
+![api dasboard](/media/api_docs/api_docs.gif)
+
 
 ### 🧱 API App Structure
 
