@@ -9,7 +9,7 @@ This project demonstrates how to build and deploy a Django application backed by
 * [📦 Phase 1: Local Development with Docker Compose](#-phase-1-local-development-with-docker-compose)
 * [🧪 Phase 2: RDS Integration Testing (Without Docker)](#-phase-2-rds-integration-testing-without-docker)
 * [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation) 
-* [📡 Phase 4:  API APPLICATION DOCUMENTATION](#-phase-4-api-documentation) 
+* [📡 Phase 4:  API APPLICATION DOCUMENTATION](#📡-phase-4--api-application-documentation)
 
 
 ### 🧪 Project  URL (Check the live project out here) 👉 👉 [project url](http://3.254.151.159)
