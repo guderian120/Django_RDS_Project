@@ -15,7 +15,7 @@ This project demonstrates how to build and deploy a Django application backed by
 ### 🧪 Project  URL (Check the live project out here) 👉 👉 [project url](http://3.254.151.159)
 
 
-### 🧱 API Docs
+### 🧱 DEMO
 ![api dasboard](/media/frontend/frontend_video.gif)
 
 
