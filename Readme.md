@@ -12,8 +12,7 @@ This project demonstrates how to build and deploy a Django application backed by
 * [📡 Phase 4:  API APPLICATION DOCUMENTATION](#-phase-4-api-documentation) 
 
 
-### 🧪 Project  URL (Check the live project out here)
-![project url](http://3.254.151.159)
+### 🧪 Project  URL (Check the live project out here) [project url](http://3.254.151.159)
 
 
 ### 🧱 API Docs
