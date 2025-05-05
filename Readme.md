@@ -114,7 +114,7 @@ volumes:
 ```Dockerfile
 FROM python:3.12-slim
 
-# Environment variables (corrected format)
+# Environment variables 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
