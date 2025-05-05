@@ -10,4 +10,7 @@ db.sqlite3
 .env
 comp/
 app
+media
+.github
+env
 
