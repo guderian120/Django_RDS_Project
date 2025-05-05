@@ -1,0 +1,255 @@
+openapi: 3.0.3
+info:
+  title: API Documentations for My Lab5
+  version: 1.0.0
+  description: "\n    This Documentation provides insights and critical information\
+    \ on my Api endpoints. If using \n    the Swagger-ui, you have the option to \
+    \ test endpoints that ingests get requests.\n    This project is Designed by Andy\
+    \ Amponsah\n    "
+paths:
+  /api/add-customer/:
+    post:
+      operationId: add_customer_create
+      description: Extract customer data from incoming request to create the customer
+      tags:
+      - add-customer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Customer'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Customer'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+          description: ''
+  /api/add-order/:
+    post:
+      operationId: add_order_create
+      description: |-
+        This is a view to add orders to a user or customer account
+        we will bypass authentications. Ensure username is in double quotes
+        change the customer key to customer_id
+        status can only be "C" , "P" or "X"
+        sample valid request
+        {
+            "customer_id":"andy",
+            "status":"C",
+            "total": 100,
+        }
+      tags:
+      - add-order
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+            examples:
+              CreateOrderExample:
+                value:
+                  customer_id: random_swagger
+                  status: P
+                  total: '27930740.0'
+                summary: Create Order Example
+                description: Example payload for creating an order
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderCreate'
+          description: ''
+  /api/analytics/:
+    get:
+      operationId: analytics_retrieve
+      description: |-
+        This function runs complex database queries to return information like
+            - Top Customers in our database
+            - Our overall monthly sales
+            - All products in our database
+            - Average order by Customer location/country
+            -frequent buyers
+      tags:
+      - analytics
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/customers/:
+    get:
+      operationId: customers_retrieve
+      description: This view will return a json of all available customers in the
+        database
+      tags:
+      - customers
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/orders/{user_name}/:
+    get:
+      operationId: orders_retrieve
+      description: |-
+        This view returns the order data of a particular customer whose username was
+        passed from the front end, so the url of this view accepts user_name as an argument
+      parameters:
+      - in: path
+        name: user_name
+        schema:
+          type: string
+        required: true
+      tags:
+      - orders
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+  /api/products/:
+    get:
+      operationId: products_retrieve
+      description: This functin returns all available products in the database
+      tags:
+      - products
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Customer:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        phone:
+          type: string
+          maxLength: 20
+        address:
+          type: string
+        loyalty_points:
+          type: integer
+          maximum: 4294967295
+          minimum: 0
+          format: int64
+        orders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+          readOnly: true
+      required:
+      - orders
+      - user
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - updated_at
+    OrderCreate:
+      type: object
+      properties:
+        customer:
+          type: integer
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        total:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+    StatusEnum:
+      enum:
+      - P
+      - C
+      - X
+      type: string
+      description: |-
+        * `P` - Pending
+        * `C` - Completed
+        * `X` - Cancelled
+    User:
+      type: object
+      description: This serializers validates request in order to create a user
+      properties:
+        username:
+          type: string
+          description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+            only.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 128
+      required:
+      - password
+      - username
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
