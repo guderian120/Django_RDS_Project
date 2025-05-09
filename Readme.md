@@ -9,7 +9,7 @@ This project demonstrates how to build and deploy a Django application backed by
 * [📦 Phase 1: Local Development with Docker Compose](#-phase-1-local-development-with-docker-compose)
 * [🧪 Phase 2: RDS Integration Testing (Without Docker)](#-phase-2-rds-integration-testing-without-docker)
 * [🚀 Phase 3: Deployment Documentation](#-phase-3-deployment-documentation) 
-* [📡 Phase 4: API Application Documentation](#-phase-4-api-development-with-docker-compose)
+* [📡 Phase 4: API Application Documentation](#-phase-4-api-development-documentation)
     
 ### 🧪 Project  URL (Check the live project out here) 👉 👉 [project url](http://3.254.151.159)
 
@@ -420,8 +420,7 @@ curl http://localhost
 You can visit the IP address of your EC2 in a browser and greet the maginificent Views
 ---
 
-## 📡 Phase 4: API Application Documenation
-## 📦 Phase 4: API Development with Docker Compose
+## 📦 Phase 4: API Development Documentation
 
 This project uses **Django REST Framework** to power a RESTful API backend for managing customers, orders, and analytics. Authentication is not implemented (due to time constraints), but this can be extended in future iterations.
 
